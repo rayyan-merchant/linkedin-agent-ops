@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 
 @dataclass(frozen=True)
 class AppSettings:
@@ -24,6 +26,7 @@ class AppSettings:
 
     @classmethod
     def from_env(cls, config_path: str | Path | None = None) -> AppSettings:
+        load_dotenv(dotenv_path=Path.cwd() / ".env")
         path = Path(
             config_path or os.getenv("BRIEF_CONFIG_PATH", "config/settings.toml")
         )

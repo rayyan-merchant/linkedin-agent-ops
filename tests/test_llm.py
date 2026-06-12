@@ -1,7 +1,16 @@
 import json
 from datetime import UTC, date, datetime
 
-from linkedin_agent_ops.llm import BriefGenerator
+import httpx
+import pytest
+
+from linkedin_agent_ops.llm import (
+    BriefGenerator,
+    GeminiProvider,
+    GroqProvider,
+    _groq_strict_schema,
+    gemini_model_names,
+)
 from linkedin_agent_ops.models import SourceItem, SourceKind
 
 
@@ -76,3 +85,144 @@ def test_generator_uses_deterministic_fallback():
     assert brief.model_used == "deterministic"
     assert brief.degraded is True
 
+
+def test_gemini_model_names_include_configured_fallback_once():
+    assert gemini_model_names(
+        {
+            "gemini": "gemini-3.5-flash",
+            "gemini_fallback": "gemini-2.5-pro",
+        }
+    ) == ["gemini-3.5-flash", "gemini-2.5-pro"]
+
+    assert gemini_model_names(
+        {
+            "gemini": ["gemini-3.5-flash", "gemini-2.5-pro"],
+            "gemini_fallback": "gemini-2.5-pro",
+        }
+    ) == ["gemini-3.5-flash", "gemini-2.5-pro"]
+
+
+def test_gemini_error_does_not_expose_api_key():
+    def fail(request):
+        return httpx.Response(503, request=request)
+
+    provider = GeminiProvider(
+        httpx.Client(transport=httpx.MockTransport(fail)),
+        "super-secret-key",
+        "gemini-test",
+        attempts=1,
+    )
+
+    with pytest.raises(RuntimeError) as exc_info:
+        provider.generate("prompt", {"type": "object"})
+
+    message = str(exc_info.value)
+    assert "HTTP 503" in message
+    assert "super-secret-key" not in message
+    assert "?key=" not in message
+
+
+def test_groq_normalizes_optional_fields_for_strict_schema():
+    def respond(request):
+        payload = json.loads(request.content)
+        response_format = payload["response_format"]["json_schema"]
+        assert response_format["strict"] is True
+        assert response_format["schema"]["required"] == ["value", "details"]
+        assert response_format["schema"]["additionalProperties"] is False
+        assert response_format["schema"]["properties"]["details"]["required"] == [
+            "note"
+        ]
+        return httpx.Response(
+            200,
+            request=request,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": '{"value":"ok","details":{"note":null}}'
+                        }
+                    }
+                ]
+            },
+        )
+
+    provider = GroqProvider(
+        httpx.Client(transport=httpx.MockTransport(respond)),
+        "groq-secret",
+        "openai/gpt-oss-120b",
+        attempts=1,
+    )
+
+    assert provider.generate(
+        "prompt",
+        {
+            "type": "object",
+            "properties": {
+                "value": {"type": "string"},
+                "details": {
+                    "type": "object",
+                    "properties": {
+                        "note": {
+                            "anyOf": [{"type": "string"}, {"type": "null"}],
+                            "default": None,
+                        }
+                    },
+                },
+            },
+            "required": ["value"],
+        },
+    ) == {"value": "ok", "details": {"note": None}}
+
+
+def test_groq_schema_normalization_does_not_mutate_input():
+    schema = {
+        "type": "object",
+        "properties": {"value": {"type": "string"}},
+        "required": [],
+    }
+
+    normalized = _groq_strict_schema(schema)
+
+    assert schema["required"] == []
+    assert "additionalProperties" not in schema
+    assert normalized["required"] == ["value"]
+    assert normalized["additionalProperties"] is False
+
+
+def test_groq_retries_rate_limit_using_retry_header():
+    calls = 0
+
+    def respond(request):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(
+                429,
+                request=request,
+                headers={"Retry-After": "0"},
+            )
+        return httpx.Response(
+            200,
+            request=request,
+            json={"choices": [{"message": {"content": '{"value":"ok"}'}}]},
+        )
+
+    provider = GroqProvider(
+        httpx.Client(transport=httpx.MockTransport(respond)),
+        "groq-secret",
+        "openai/gpt-oss-120b",
+        attempts=2,
+    )
+
+    result = provider.generate(
+        "prompt",
+        {
+            "type": "object",
+            "properties": {"value": {"type": "string"}},
+            "required": ["value"],
+            "additionalProperties": False,
+        },
+    )
+
+    assert result == {"value": "ok"}
+    assert calls == 2

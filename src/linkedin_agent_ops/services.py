@@ -16,7 +16,7 @@ from linkedin_agent_ops.agents import (
 from linkedin_agent_ops.agents.paper import PaperExtractor
 from linkedin_agent_ops.config import AppSettings
 from linkedin_agent_ops.context import CreatorProfile
-from linkedin_agent_ops.llm import GeminiProvider, GroqProvider
+from linkedin_agent_ops.llm import GeminiProvider, GroqProvider, gemini_model_names
 from linkedin_agent_ops.sheets import GoogleSheetsStore
 
 
@@ -47,12 +47,13 @@ def build_services() -> AgentServices:
     )
     providers = []
     if settings.gemini_api_key:
-        providers.append(
+        providers.extend(
             GeminiProvider(
                 client,
                 settings.gemini_api_key,
-                settings.config["models"]["gemini"],
+                model,
             )
+            for model in gemini_model_names(settings.config["models"])
         )
     if settings.groq_api_key:
         providers.append(
@@ -94,4 +95,3 @@ def build_services() -> AgentServices:
         cricket=CricketBuildLogAgent(**common),
         store=store,
     )
-

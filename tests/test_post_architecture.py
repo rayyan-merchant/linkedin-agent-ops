@@ -54,3 +54,27 @@ def test_post_architecture_validator_flags_invented_number_and_language():
     assert {issue.code for issue in issues} == {"banned_language", "invented_number"}
     assert IssueSeverity.CRITICAL in {issue.severity for issue in issues}
 
+
+def test_post_architecture_prompt_avoids_personal_experience_requirement():
+    class CapturingRunner:
+        def __init__(self):
+            self.prompt = ""
+
+        def run(self, *, agent, envelope, output_model, deterministic_validator):
+            self.prompt = envelope.render()
+            return None
+
+    runner = CapturingRunner()
+    PostArchitectureAgent(
+        runner=runner,
+        profile=CreatorProfile({"positioning": "AI engineer"}),
+        examples_path="missing",
+    ).generate(
+        PostArchitectureRequest(
+            topic="Agent reliability",
+            key_insight="Retries need explicit failure classes and limits.",
+        )
+    )
+
+    assert "creator's mind" not in runner.prompt
+    assert "engineering decision change" in runner.prompt

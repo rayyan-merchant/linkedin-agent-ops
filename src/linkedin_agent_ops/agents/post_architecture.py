@@ -76,9 +76,13 @@ class PostArchitectureAgent(BaseAgent):
             creator_context=self.context(),
             task=(
                 "Recommend the best format and create exactly seven two-line hook options "
-                "using distinct angles: experiment result, deployment failure, metric "
-                "comparison, what changed the creator's mind, human problem, counterintuitive "
-                "number, and common technical mistake. Use a metric only when supplied. "
+                "using distinct grounded angles: supplied experiment result, observed failure "
+                "mode, supplied metric comparison, engineering decision change, affected "
+                "workflow only when evidenced, supplied counterintuitive number, and common "
+                "technical mistake implied by the input. Use a metric only when supplied. "
+                "Never introduce a number, count, percentage, time period, ranking, or "
+                "benchmark that is not present in the request; if a hook angle lacks enough "
+                "proof, keep the hook qualitative and add a missing-proof warning. "
                 "Return a header-only outline, three questions that invite specific technical "
                 "experience, one concrete save element, CTA guidance, and proof gaps. "
                 "Hooks are raw options for the creator to rewrite, not final post copy."
@@ -88,7 +92,8 @@ class PostArchitectureAgent(BaseAgent):
                 "Every hook must be exactly two concise lines, specific to the input, grounded "
                 "in supplied evidence, and materially different from the others. Do not imply "
                 "testing, deployment, personal experience, or numerical results not supplied. "
-                "Avoid generic engagement questions and all banned language."
+                "Avoid generic engagement questions and all banned language. Unsupported proof "
+                "belongs in missing_proof_warnings, not in hooks or format rationale."
             ),
             examples=self.examples(request.topic),
         )

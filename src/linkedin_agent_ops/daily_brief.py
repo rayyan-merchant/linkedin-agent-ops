@@ -22,6 +22,7 @@ from linkedin_agent_ops.llm import (
     BriefGenerator,
     GeminiProvider,
     GroqProvider,
+    gemini_model_names,
 )
 from linkedin_agent_ops.models import SourceItem, SourceKind
 from linkedin_agent_ops.pipeline import DailyBriefPipeline
@@ -67,6 +68,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _configure_stdout()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
@@ -92,12 +94,13 @@ def main(argv: list[str] | None = None) -> int:
         collectors = _build_collectors(settings, client, args.fixture)
         providers = []
         if settings.gemini_api_key:
-            providers.append(
+            providers.extend(
                 GeminiProvider(
                     client,
                     settings.gemini_api_key,
-                    settings.config["models"]["gemini"],
+                    model,
                 )
+                for model in gemini_model_names(settings.config["models"])
             )
         if settings.groq_api_key:
             providers.append(
@@ -144,6 +147,12 @@ def main(argv: list[str] | None = None) -> int:
     return 0 if result.status in {"success", "dry_run", "skipped"} else 1
 
 
+def _configure_stdout() -> None:
+    reconfigure = getattr(sys.stdout, "reconfigure", None)
+    if reconfigure:
+        reconfigure(encoding="utf-8", errors="replace")
+
+
 def _build_collectors(
     settings: AppSettings,
     client: httpx.Client,
@@ -187,4 +196,3 @@ def _build_collectors(
 
 if __name__ == "__main__":
     sys.exit(main())
-

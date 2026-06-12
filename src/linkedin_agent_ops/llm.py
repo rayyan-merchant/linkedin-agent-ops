@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import copy
 import json
 import logging
+import re
+import time
 from datetime import date, datetime
 from typing import Any, Protocol
 
@@ -50,6 +53,19 @@ class StructuredProvider(Protocol):
     def generate(self, prompt: str, schema: dict[str, Any]) -> dict[str, Any]: ...
 
 
+def gemini_model_names(models_config: dict[str, Any]) -> list[str]:
+    configured = models_config.get("gemini", [])
+    names = [configured] if isinstance(configured, str) else list(configured)
+    fallback = models_config.get("gemini_fallback")
+    if fallback:
+        names.append(fallback)
+    unique = []
+    for name in names:
+        if name and name not in unique:
+            unique.append(name)
+    return unique
+
+
 class GeminiProvider:
     name = "gemini"
 
@@ -81,7 +97,7 @@ class GeminiProvider:
             },
         }
         last_error: Exception | None = None
-        for _ in range(self.attempts):
+        for attempt in range(self.attempts):
             try:
                 response = self.client.post(
                     endpoint,
@@ -94,7 +110,10 @@ class GeminiProvider:
                 return json.loads(text)
             except (httpx.HTTPError, KeyError, IndexError, json.JSONDecodeError) as exc:
                 last_error = exc
-        raise RuntimeError(f"Gemini generation failed: {last_error}")
+                _wait_before_retry(exc, attempt, self.attempts)
+        raise RuntimeError(
+            f"Gemini generation failed: {_safe_provider_error(last_error)}"
+        )
 
 
 class GroqProvider:
@@ -121,8 +140,8 @@ class GroqProvider:
                 {
                     "role": "system",
                     "content": (
-                        "You produce factual structured research briefs using only "
-                        "the supplied candidate data."
+                        "Follow the trusted role and task in the user prompt. Produce factual "
+                        "structured JSON grounded only in the supplied evidence."
                     ),
                 },
                 {"role": "user", "content": prompt},
@@ -133,12 +152,12 @@ class GroqProvider:
                 "json_schema": {
                     "name": "daily_ai_brief",
                     "strict": True,
-                    "schema": schema,
+                    "schema": _groq_strict_schema(schema),
                 },
             },
         }
         last_error: Exception | None = None
-        for _ in range(self.attempts):
+        for attempt in range(self.attempts):
             try:
                 response = self.client.post(
                     "https://api.groq.com/openai/v1/chat/completions",
@@ -150,7 +169,72 @@ class GroqProvider:
                 return json.loads(text)
             except (httpx.HTTPError, KeyError, IndexError, json.JSONDecodeError) as exc:
                 last_error = exc
-        raise RuntimeError(f"Groq generation failed: {last_error}")
+                _wait_before_retry(exc, attempt, self.attempts)
+        raise RuntimeError(
+            f"Groq generation failed: {_safe_provider_error(last_error)}"
+        )
+
+
+def _safe_provider_error(error: Exception | None) -> str:
+    if error is None:
+        return "unknown provider error"
+    if isinstance(error, httpx.HTTPStatusError):
+        return f"HTTP {error.response.status_code}"
+    if isinstance(error, httpx.RequestError):
+        return error.__class__.__name__
+    if isinstance(error, (KeyError, IndexError, json.JSONDecodeError)):
+        return f"invalid provider response ({error.__class__.__name__})"
+    return error.__class__.__name__
+
+
+def _groq_strict_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    strict_schema = copy.deepcopy(schema)
+
+    def normalize(node: Any) -> None:
+        if isinstance(node, dict):
+            properties = node.get("properties")
+            if isinstance(properties, dict):
+                node["required"] = list(properties)
+                node["additionalProperties"] = False
+            for value in node.values():
+                normalize(value)
+        elif isinstance(node, list):
+            for value in node:
+                normalize(value)
+
+    normalize(strict_schema)
+    return strict_schema
+
+
+def _wait_before_retry(error: Exception, attempt: int, attempts: int) -> None:
+    if attempt >= attempts - 1:
+        return
+    delay = min(2**attempt, 8)
+    if isinstance(error, httpx.HTTPStatusError):
+        if error.response.status_code not in {429, 500, 502, 503, 504}:
+            return
+        delay = _provider_retry_delay(error.response.headers) or delay
+    elif not isinstance(error, httpx.RequestError):
+        return
+    time.sleep(min(delay, 60))
+
+
+def _provider_retry_delay(headers: httpx.Headers) -> float | None:
+    retry_after = headers.get("retry-after")
+    if retry_after:
+        try:
+            return max(0.0, float(retry_after))
+        except ValueError:
+            pass
+    for name in ("x-ratelimit-reset-tokens", "x-ratelimit-reset-requests"):
+        value = headers.get(name)
+        if not value:
+            continue
+        parts = re.findall(r"(\d+(?:\.\d+)?)(ms|s|m|h)", value.lower())
+        if parts:
+            units = {"ms": 0.001, "s": 1.0, "m": 60.0, "h": 3600.0}
+            return sum(float(amount) * units[unit] for amount, unit in parts)
+    return None
 
 
 class BriefGenerator:
