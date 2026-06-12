@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.9"
+          cache: pip
+
+      - name: Install development dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: pytest --cov=linkedin_agent_ops --cov-report=term-missing
+
+      - name: Exercise offline CLI
+        run: >-
+          python -m linkedin_agent_ops.daily_brief
+          --date 2026-06-12
+          --dry-run
+          --fixture tests/fixtures/source_items.json
+

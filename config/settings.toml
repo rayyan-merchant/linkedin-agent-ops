@@ -1,0 +1,61 @@
+[brief]
+timezone = "Asia/Karachi"
+paper_count = 3
+trend_count = 3
+repository_count = 3
+minimum_successful_collectors = 2
+minimum_candidates = 5
+
+[lookback_hours]
+arxiv = 48
+hacker_news = 36
+rss = 48
+github_days = 7
+
+[models]
+gemini = "gemini-3.5-flash"
+groq = "openai/gpt-oss-120b"
+
+[ranking]
+recency_weight = 30.0
+relevance_weight = 35.0
+source_quality_weight = 20.0
+engagement_weight = 15.0
+
+[topics]
+keywords = [
+  "computer vision",
+  "vision model",
+  "object detection",
+  "agentic ai",
+  "ai agent",
+  "multi-agent",
+  "mlops",
+  "rag",
+  "retrieval augmented generation",
+  "ai deployment",
+  "inference",
+  "research to production",
+  "cricket computer vision",
+]
+
+[github]
+queries = [
+  "computer vision",
+  "ai agents",
+  "mlops",
+  "retrieval augmented generation",
+  "ai inference",
+]
+minimum_stars = 3
+
+[rss]
+feeds = [
+  { name = "Google DeepMind", url = "https://deepmind.google/blog/rss.xml" },
+  { name = "Hugging Face", url = "https://huggingface.co/blog/feed.xml" },
+  { name = "NVIDIA Technical Blog", url = "https://developer.nvidia.com/blog/feed/" },
+  { name = "LangChain", url = "https://blog.langchain.com/rss/" },
+  { name = "The Batch", url = "https://www.deeplearning.ai/the-batch/feed/" },
+  { name = "Ahead of AI", url = "https://magazine.sebastianraschka.com/feed" },
+]
+
