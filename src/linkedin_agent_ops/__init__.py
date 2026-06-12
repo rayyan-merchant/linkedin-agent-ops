@@ -1,4 +1,3 @@
-"""Daily AI brief automation."""
+"""Private AI research and content-planning agents."""
 
-__version__ = "0.1.0"
-
+__version__ = "0.2.0"

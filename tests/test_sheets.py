@@ -1,6 +1,7 @@
 import re
 from datetime import UTC, date, datetime
 
+from linkedin_agent_ops.agents.performance import ContentFormat, PostMetric
 from linkedin_agent_ops.models import (
     BriefItem,
     BriefSection,
@@ -155,3 +156,30 @@ def test_sheets_store_upserts_items_and_tracks_completion():
     store.mark_delivery("run-2", "sent")
     assert store.is_completed("2026-06-12") is True
 
+
+def test_sheets_store_round_trips_post_metrics():
+    service = FakeService()
+    store = GoogleSheetsStore(
+        spreadsheet_id="sheet-id",
+        service_account_info={},
+        service=service,
+    )
+    post = PostMetric(
+        post_id="post-1",
+        posted_date=date(2026, 6, 12),
+        format=ContentFormat.TEXT,
+        topic="agents",
+        pillar="technical",
+        hook_type="metric",
+        first_line="A technical hook.",
+        impressions=100,
+        reactions=5,
+        comments=2,
+        saves=3,
+        shares=1,
+        profile_clicks=1,
+    )
+    store.save_posts([post])
+    loaded = store.load_posts()
+    assert loaded[0].post_id == "post-1"
+    assert loaded[0].golden_hour_comments is None

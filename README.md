@@ -1,21 +1,21 @@
-# Daily AI Brief
+# LinkedIn Agent Ops
 
-An automated research pipeline that delivers a curated AI intelligence brief
-every morning.
+A private AI research and content-planning system for a production-focused AI
+engineer.
 
-It collects recent signals from:
+It includes:
 
-- arXiv
-- Hacker News
-- GitHub
-- Curated AI and engineering RSS feeds
+- A scheduled Daily AI Brief from arXiv, Hacker News, GitHub, and curated feeds
+- A Post Architecture Agent for hooks, structure, format, and discussion prompts
+- A full-paper Paper Brief Agent with page-level evidence
+- A Carousel Architect with structured slides and Marp export
+- A Performance Analyzer driven by computed LinkedIn metrics
+- A Cricket CV Build Log Agent that connects engineering progress to cricket meaning
 
-The pipeline ranks and deduplicates candidates, generates concise summaries and
-content angles with Gemini or Groq, emails the brief through Gmail, and archives
-selected items in Google Sheets.
+FastAPI provides typed agent endpoints, Streamlit provides the local interface,
+and Google Sheets stores selected research, analytics, and compact run history.
+Gemini is the primary model with Groq fallback.
 
-It runs daily at 7:30 AM PKT through GitHub Actions and includes deterministic
-fallbacks, partial-failure handling, and duplicate-delivery protection.
-
-The output is research material for human-written LinkedIn content, not
-automatically generated posts.
+Every manual agent uses structured outputs, grounded evidence, deterministic
+checks, a validation pass, and one repair attempt. The outputs support human
+thinking and writing; the system does not publish posts or automate engagement.

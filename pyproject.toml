@@ -4,17 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "linkedin-agent-ops"
-version = "0.1.0"
-description = "Daily AI intelligence brief delivered by email and archived in Google Sheets."
+version = "0.2.0"
+description = "Private AI research and LinkedIn content-planning agent suite."
 readme = "README.md"
 requires-python = ">=3.11.9,<3.12"
 dependencies = [
+  "fastapi>=0.115,<1",
   "feedparser>=6.0.11,<7",
   "google-api-python-client>=2.140,<3",
   "google-auth>=2.34,<3",
   "httpx>=0.27,<1",
   "pydantic>=2.8,<3",
+  "pypdf>=5.0,<7",
+  "python-multipart>=0.0.9,<1",
+  "streamlit>=1.40,<2",
   "tzdata>=2026.1",
+  "uvicorn>=0.30,<1",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +31,8 @@ dev = [
 
 [project.scripts]
 daily-ai-brief = "linkedin_agent_ops.daily_brief:main"
+linkedin-agents-api = "linkedin_agent_ops.api:run"
+linkedin-agents-ui = "linkedin_agent_ops.ui:run"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/linkedin_agent_ops"]

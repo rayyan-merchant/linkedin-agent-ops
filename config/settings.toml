@@ -16,6 +16,15 @@ github_days = 7
 gemini = "gemini-3.5-flash"
 groq = "openai/gpt-oss-120b"
 
+[agents]
+profile_path = "config/creator_profile.toml"
+examples_path = "config/examples"
+history_enabled = true
+paper_max_bytes = 20971520
+paper_max_pages = 100
+paper_direct_context_chars = 120000
+paper_chunk_chars = 30000
+
 [ranking]
 recency_weight = 30.0
 relevance_weight = 35.0
@@ -58,4 +67,3 @@ feeds = [
   { name = "The Batch", url = "https://www.deeplearning.ai/the-batch/feed/" },
   { name = "Ahead of AI", url = "https://magazine.sebastianraschka.com/feed" },
 ]
-

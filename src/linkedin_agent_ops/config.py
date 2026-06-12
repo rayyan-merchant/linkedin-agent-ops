@@ -20,6 +20,7 @@ class AppSettings:
     email_from_name: str = "Daily AI Brief"
     google_service_account_json: str = ""
     google_sheet_id: str = ""
+    agent_api_url: str = "http://127.0.0.1:8000"
 
     @classmethod
     def from_env(cls, config_path: str | Path | None = None) -> AppSettings:
@@ -41,6 +42,7 @@ class AppSettings:
                 "GOOGLE_SERVICE_ACCOUNT_JSON", ""
             ),
             google_sheet_id=os.getenv("GOOGLE_SHEET_ID", ""),
+            agent_api_url=os.getenv("AGENT_API_URL", "http://127.0.0.1:8000"),
         )
 
     def validate_delivery(self) -> None:
@@ -57,6 +59,13 @@ class AppSettings:
         if missing:
             raise ValueError(f"Missing required secrets: {', '.join(missing)}")
         self.service_account_info()
+
+    def validate_agents(self) -> None:
+        if not self.gemini_api_key and not self.groq_api_key:
+            raise ValueError("At least one of GEMINI_API_KEY or GROQ_API_KEY is required")
+
+    def sheets_configured(self) -> bool:
+        return bool(self.google_service_account_json and self.google_sheet_id)
 
     def service_account_info(self) -> dict[str, Any]:
         if not self.google_service_account_json:

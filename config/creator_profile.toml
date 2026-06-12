@@ -1,0 +1,58 @@
+version = "1"
+name = "Rayyan Merchant"
+positioning = "An AI engineer who builds production systems where research-grade machine learning meets reliable engineering."
+audience = [
+  "ML engineers",
+  "AI builders",
+  "DevOps and MLOps engineers",
+  "AI researchers",
+  "technical recruiters and founders",
+]
+content_pillars = [
+  "computer vision",
+  "agentic AI",
+  "MLOps",
+  "RAG and AI deployment",
+  "research-to-production",
+  "cricket computer vision",
+]
+technical_expertise = [
+  "production computer vision",
+  "multi-agent systems",
+  "model deployment and observability",
+  "CI/CD for machine-learning systems",
+]
+tone = [
+  "blunt and engineer-focused",
+  "specific rather than motivational",
+  "curious without overstating evidence",
+  "useful to practitioners",
+]
+banned_language = [
+  "in today's fast-paced digital landscape",
+  "delve",
+  "testament",
+  "beacon",
+  "revolutionizing",
+  "paramount",
+  "furthermore",
+  "it's worth noting",
+  "game-changer",
+  "synergy",
+  "thrilled to share",
+  "excited to announce",
+  "passionate about",
+  "groundbreaking",
+]
+non_goals = [
+  "Do not write complete LinkedIn posts.",
+  "Do not invent metrics, experiments, citations, or personal experience.",
+  "Do not automate publishing, commenting, or engagement.",
+  "Do not imitate wording from example posts.",
+]
+cricket_context = [
+  "Translate technical operations into their cricket meaning.",
+  "Serve both AI engineers and cricket analysts without weakening technical accuracy.",
+  "Never claim match impact or cricket outcomes that the supplied evidence does not support.",
+]
+
