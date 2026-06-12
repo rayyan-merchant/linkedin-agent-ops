@@ -7,9 +7,11 @@ audience = [
   "DevOps and MLOps engineers",
   "AI researchers",
   "technical recruiters and founders",
+  "computer vision researcher"
 ]
 content_pillars = [
   "computer vision",
+  "world models",
   "agentic AI",
   "MLOps",
   "RAG and AI deployment",

@@ -35,6 +35,14 @@ engagement_weight = 15.0
 [topics]
 keywords = [
   "computer vision",
+  "world models",
+  "NLP",
+  "google",
+  "openai",
+  "claude",
+  "software developemnt",
+  "machine learning",
+  "deep learning",
   "vision model",
   "object detection",
   "agentic ai",
@@ -52,6 +60,10 @@ keywords = [
 [github]
 queries = [
   "computer vision",
+  "machine learning",
+  "deep learning",
+  "NLP",
+  "skills",
   "ai agents",
   "mlops",
   "retrieval augmented generation",
@@ -59,12 +71,52 @@ queries = [
 ]
 minimum_stars = 3
 
+
 [rss]
 feeds = [
+  # Research Labs
   { name = "Google DeepMind", url = "https://deepmind.google/blog/rss.xml" },
+  { name = "Google Research", url = "https://research.google/blog/rss/" },
+  { name = "OpenAI", url = "https://openai.com/news/rss.xml" },
+  { name = "Anthropic", url = "https://www.anthropic.com/news/rss.xml" },
+  { name = "Meta AI", url = "https://ai.meta.com/blog/rss/" },
+  { name = "Microsoft Research", url = "https://www.microsoft.com/en-us/research/feed/" },
+
+  # AI Engineering & Production AI
   { name = "Hugging Face", url = "https://huggingface.co/blog/feed.xml" },
   { name = "NVIDIA Technical Blog", url = "https://developer.nvidia.com/blog/feed/" },
   { name = "LangChain", url = "https://blog.langchain.com/rss/" },
+  { name = "LlamaIndex", url = "https://www.llamaindex.ai/blog/rss.xml" },
+  { name = "Weights & Biases", url = "https://wandb.ai/site/rss.xml" },
+  { name = "Pinecone", url = "https://www.pinecone.io/feed/" },
+  { name = "Modal", url = "https://modal.com/blog/rss.xml" },
+  { name = "Replicate", url = "https://replicate.com/blog/rss.xml" },
+  { name = "Databricks AI", url = "https://www.databricks.com/blog/category/artificial-intelligence/feed" },
+
+  # MLOps & Infrastructure
+  { name = "Anyscale", url = "https://www.anyscale.com/blog/rss.xml" },
+  { name = "Kubeflow", url = "https://blog.kubeflow.org/feed.xml" },
+  { name = "MLflow", url = "https://mlflow.org/blog/rss.xml" },
+  { name = "Redis", url = "https://redis.com/blog/rss/" },
+  { name = "Qdrant", url = "https://qdrant.tech/blog/rss.xml" },
+  { name = "Weaviate", url = "https://weaviate.io/blog/rss.xml" },
+
+  # Computer Vision
+  { name = "Roboflow", url = "https://blog.roboflow.com/rss/" },
+  { name = "Ultralytics", url = "https://www.ultralytics.com/blog/rss.xml" },
+  { name = "PyImageSearch", url = "https://pyimagesearch.com/feed/" },
+
+  # Researchers & Thought Leaders
   { name = "The Batch", url = "https://www.deeplearning.ai/the-batch/feed/" },
   { name = "Ahead of AI", url = "https://magazine.sebastianraschka.com/feed" },
+  { name = "Chip Huyen", url = "https://huyenchip.com/feed.xml" },
+  { name = "Lil'Log", url = "https://lilianweng.github.io/index.xml" },
+  { name = "Import AI", url = "https://jack-clark.net/feed/" },
+  { name = "Eugene Yan", url = "https://eugeneyan.com/feed.xml" },
+
+  # AI News & Trends
+  { name = "VentureBeat AI", url = "https://venturebeat.com/ai/feed/" },
+  { name = "TechCrunch AI", url = "https://techcrunch.com/category/artificial-intelligence/feed/" },
+  { name = "The Decoder", url = "https://the-decoder.com/feed/" },
+  { name = "MarkTechPost", url = "https://www.marktechpost.com/feed/" }
 ]
